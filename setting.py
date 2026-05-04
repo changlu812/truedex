@@ -10,7 +10,7 @@ for i in range(10):
     accounts.append(account)
 
 # Local test validator
-PROGRAM_ID = "2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih"
+PROGRAM_ID = "9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd"
 RPC_URL = "http://localhost:8899"
 WS_URL = "ws://localhost:8900"
 

@@ -2,20 +2,22 @@ import { Connection, PublicKey, Transaction, TransactionInstruction } from 'http
 
 const rc = React.createElement;
 const LightweightCharts = window.LightweightCharts;
-const TESTNET_INDEXER_URL = 'http://127.0.0.1:3000';
 
 const USE_DEVNET = true; // Set to true for devnet, false for local test validator
 
 const CONFIG = USE_DEVNET ? {
   SOLANA_PROGRAM: '2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih',
   RPC_URL: 'https://api.devnet.solana.com',
+  TESTNET_INDEXER_URL: 'https://truedex-testnet.zentra.dev',
 } : {
-  SOLANA_PROGRAM: '2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih',
+  SOLANA_PROGRAM: '9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd',
   RPC_URL: 'http://127.0.0.1:8899',
+  TESTNET_INDEXER_URL: 'http://127.0.0.1:3000',
 };
 
 const SOLANA_PROGRAM = CONFIG.SOLANA_PROGRAM;
 const RPC_URL = CONFIG.RPC_URL;
+const TESTNET_INDEXER_URL = CONFIG.TESTNET_INDEXER_URL;
 
 function getConnection() {
   const wallet = getAllWallets();
@@ -747,9 +749,10 @@ class OrderPanel extends React.Component {
         rc('button', { className: `px-4 py-2 ${this.state.activeTab === 'Market' ? 'border-b-2 border-blue-500' : ''}`, onClick: () => this.handleTabChange('Market') }, 'Market'),
         rc('button', { className: `px-4 py-2 ${this.state.activeTab === 'Limit' ? 'border-b-2 border-blue-500' : ''}`, onClick: () => this.handleTabChange('Limit') }, 'Limit')
       ),
-      rc('div', { className: 'flex mt-4' }),
-      rc('button', { className: `flex-1 py-2 ${this.state.tradeType === 'Buy' ? 'bg-green-600' : 'bg-gray-700'}`, onClick: () => this.handleTradeTypeChange('Buy') }, 'Buy'),
-      rc('button', { className: `flex-1 py-2 ${this.state.tradeType === 'Sell' ? 'bg-red-600' : 'bg-gray-700'}`, onClick: () => this.handleTradeTypeChange('Sell') }, 'Sell'),
+      rc('div', { className: 'flex mt-4 gap-2' },
+        rc('button', { className: `flex-1 py-2 ${this.state.tradeType === 'Buy' ? 'bg-green-600' : 'bg-gray-700'}`, onClick: () => this.handleTradeTypeChange('Buy') }, 'Buy'),
+        rc('button', { className: `flex-1 py-2 ${this.state.tradeType === 'Sell' ? 'bg-red-600' : 'bg-gray-700'}`, onClick: () => this.handleTradeTypeChange('Sell') }, 'Sell')
+      ),
       rc('div', { className: 'mt-4 space-y-4' },
         rc('div', { className: 'flex justify-between text-sm' },
           rc('span', { className: 'text-gray-400' }, 'Available:'),

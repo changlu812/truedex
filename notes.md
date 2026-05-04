@@ -25,7 +25,7 @@ solana program deploy target/deploy/token_locker.so --url mainnet
 
 ### Update program
 ```bash
-solana program deploy target/deploy/token_locker.so --program-id 2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih --url localhost
+solana program deploy target/deploy/token_locker.so --program-id 9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd --url localhost
 ```
 
 ## 1. Core Concepts
@@ -36,7 +36,7 @@ solana program deploy target/deploy/token_locker.so --program-id 2AxT8e7Jq2vgoPN
     *   *Analogy*: Mint is the currency (USD), Token Account is your wallet.
 
 ### Vault Architecture
-*   **Program ID**: The address of the smart contract (`2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih`).
+*   **Program ID**: The address of the smart contract (`9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd`).
 *   **Vault (PDA)**: The Program Derived Address. It is the "Manager" of the system. It stores who the operator is and has the power to sign transfers.
 *   **Vault Token Account**: A Token Account physically owned by the **Vault (PDA)**. This is where tokens are stored while locked.
 
@@ -81,3 +81,10 @@ python3 release_tokens.py <VAULT_PDA_ADDRESS> <VAULT_TOKEN_ACCOUNT> <DESTINATION
 ## 5. Debugging & Indexer
 *   **Indexer**: `python3 indexer.py` monitors the program and parses `lock`/`release` events, showing the sender and mint involved.
 *   **Check Balance**: `spl-token balance --address <ATA_ADDRESS>`
+
+
+
+solana config set --url devnet
+
+solana balance
+

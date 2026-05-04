@@ -13,7 +13,7 @@ from solders.pubkey import Pubkey
 from solders.signature import Signature
 from setting import PROGRAM_ID, RPC_URL, WS_URL, USE_DEVNET, DEVNET_PROGRAM_ID, DEVNET_RPC_URL, DEVNET_WS_URL
 
-SERVER_URL = "http://localhost:3000"
+SERVER_URL = "http://127.0.0.1:3000"
 
 if USE_DEVNET:
     ACTIVE_RPC_URL = DEVNET_RPC_URL
