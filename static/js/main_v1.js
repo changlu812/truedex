@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Transaction, TransactionInstruction } from 'https://esm.sh/@solana/web3.js@1.95.0';
+import { Connection, PublicKey, Transaction, TransactionInstruction, ComputeBudgetProgram } from 'https://esm.sh/@solana/web3.js@1.95.0';
 
 const rc = React.createElement;
 const LightweightCharts = window.LightweightCharts;
@@ -646,6 +646,7 @@ class OrderPanel extends React.Component {
       }
 
       const calldata = JSON.stringify({
+        p: "zen",
         f: 'trade_limit_order',
         a: [for_token, base_amount, quote_token, quote_amount]
       });
@@ -654,6 +655,7 @@ class OrderPanel extends React.Component {
       const instructionData = new Uint8Array([3, ...data]);
 
       const transaction = new Transaction();
+
       const keys = [
         { pubkey: publicKey, isSigner: false, isWritable: true },
         { pubkey: publicKey, isSigner: false, isWritable: true },
@@ -666,15 +668,17 @@ class OrderPanel extends React.Component {
       });
       transaction.add(ix);
 
-      // try {
+      try {
         transaction.feePayer = publicKey;
         transaction.recentBlockhash = (await getConnection().getLatestBlockhash()).blockhash;
-        const signature = await sendTransaction(transaction, getConnection());
+        // signTransaction only signs, need to send manually
+        const signedTransaction = await sendTransaction(transaction);
+        const signature = await getConnection().sendRawTransaction(signedTransaction.serialize());
         console.log('Transaction sent:', signature);
-      // } catch (error) {
-      //   console.error('Order failed:', error);
-      //   alert('Order failed.');
-      // }
+      } catch (error) {
+        console.error('Order failed:', error);
+        alert('Order failed.');
+      }
     } else {
       if (!size || isNaN(parseFloat(size)) || parseFloat(size) <= 0) {
         alert('Please enter a valid size');
@@ -697,6 +701,13 @@ class OrderPanel extends React.Component {
       const instructionData = new Uint8Array([3, ...data]);
 
       const transaction = new Transaction();
+      
+      // Add compute budget instructions (required for devnet)
+      // transaction.add(
+      //     ComputeBudgetProgram.setComputeUnitLimit({ units: 200000 }),
+      //     ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 1000 })
+      // );
+
       const keys = [
         { pubkey: publicKey, isSigner: false, isWritable: true },
         { pubkey: publicKey, isSigner: false, isWritable: true },
@@ -712,7 +723,9 @@ class OrderPanel extends React.Component {
       try {
         transaction.feePayer = publicKey;
         transaction.recentBlockhash = (await getConnection().getLatestBlockhash()).blockhash;
-        const signature = await sendTransaction(transaction, getConnection());
+        // signTransaction only signs, need to send manually
+        const signedTransaction = await sendTransaction(transaction);
+        const signature = await getConnection().sendRawTransaction(signedTransaction.serialize());
         console.log('Transaction sent:', signature);
       } catch (error) {
         console.error('Order failed:', error);
