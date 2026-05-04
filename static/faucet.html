@@ -228,12 +228,14 @@
                 // Add instruction identifier 3 for token_mint_free
                 const instructionData = new Uint8Array([3, ...data]);
 
+                const keys = [
+                    { pubkey: new PublicKey(userAddress), isSigner: false, isWritable: true },
+                    { pubkey: new PublicKey(userAddress), isSigner: false, isWritable: true },
+                    { pubkey: new PublicKey(userAddress), isSigner: true, isWritable: false },
+                ];
+
                 const instruction = new TransactionInstruction({
-                    keys: [{
-                        pubkey: new PublicKey(userAddress),
-                        isSigner: true,
-                        isWritable: true
-                    }],
+                    keys: keys,
                     programId: new PublicKey(SOLANA_PROGRAM),
                     data: instructionData,
                 });
@@ -319,31 +321,20 @@
 
             wallet = getAllWallets();
             
-            if (wallet) {
-                // Check if wallet is already connected
-                if (wallet.isConnected === true || wallet.connected === true || wallet.publicKey) {
-                    userAddress = wallet.publicKey ? wallet.publicKey.toString() : null;
-                    if (userAddress) {
-                        // Already connected, show wallet info directly
-                        walletConnectDiv.style.display = 'none';
-                        walletInfoDiv.style.display = 'block';
-                        userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
-                        connection = new Connection(RPC_URL);
-                        await updateBalances();
-                        try {
-                            wallet.on('accountChanged', () => window.location.reload());
-                            wallet.on('disconnect', () => disconnectWallet());
-                        } catch (e) {}
-                    } else {
-                        // Wallet found but no publicKey, show connect button
-                        walletConnectDiv.style.display = 'flex';
-                    }
-                } else {
-                    // Wallet not connected, show connect button
-                    walletConnectDiv.style.display = 'flex';
-                }
+            if (wallet && wallet.publicKey) {
+                // Wallet already connected
+                userAddress = wallet.publicKey.toString();
+                walletConnectDiv.style.display = 'none';
+                walletInfoDiv.style.display = 'block';
+                userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                connection = new Connection(RPC_URL);
+                await updateBalances();
+                try {
+                    wallet.on('accountChanged', () => window.location.reload());
+                    wallet.on('disconnect', () => disconnectWallet());
+                } catch (e) {}
             } else {
-                // No wallet found, show connect button
+                // Show connect button
                 walletConnectDiv.style.display = 'flex';
             }
         };
