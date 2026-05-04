@@ -312,30 +312,60 @@
             connection = null;
         };
 
-        const init = async () => {
+        const init = () => {
             connectButton.addEventListener('click', connectWallet);
             disconnectButton.addEventListener('click', disconnectWallet);
 
             document.getElementById('faucetBTC').addEventListener('click', () => requestFaucet('BTC', 1000));
             document.getElementById('faucetUSDC').addEventListener('click', () => requestFaucet('USDC', 10000));
 
-            wallet = getAllWallets();
-            
-            if (wallet && wallet.publicKey) {
-                // Wallet already connected
-                userAddress = wallet.publicKey.toString();
-                walletConnectDiv.style.display = 'none';
-                walletInfoDiv.style.display = 'block';
-                userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
-                connection = new Connection(RPC_URL);
-                await updateBalances();
-                try {
-                    wallet.on('accountChanged', () => window.location.reload());
-                    wallet.on('disconnect', () => disconnectWallet());
-                } catch (e) {}
-            } else {
-                // Show connect button
-                walletConnectDiv.style.display = 'flex';
+            const checkWallet = () => {
+                wallet = getAllWallets();
+                console.log('checkWallet:', wallet);
+                if (wallet) {
+                    let publicKey = null;
+                    // Check if already connected
+                    if (wallet.isConnected && wallet.publicKey) {
+                        publicKey = wallet.publicKey;
+                    } else if (wallet.connected && wallet.publicKey) {
+                        publicKey = wallet.publicKey;
+                    } else if (wallet.publicKey) {
+                        publicKey = wallet.publicKey;
+                    }
+
+                    if (publicKey) {
+                        // Already connected
+                        userAddress = publicKey.toString();
+                        walletConnectDiv.style.display = 'none';
+                        walletInfoDiv.style.display = 'block';
+                        userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                        connection = new Connection(RPC_URL);
+                        updateBalances();
+                        try {
+                            wallet.on('accountChanged', () => window.location.reload());
+                            wallet.on('disconnect', () => disconnectWallet());
+                        } catch (e) {}
+                        return true;
+                    } else {
+                        // Wallet found but not connected
+                        walletConnectDiv.style.display = 'flex';
+                        return false;
+                    }
+                } else {
+                    // No wallet found
+                    walletConnectDiv.style.display = 'flex';
+                    return false;
+                }
+            };
+
+            // Check immediately
+            if (!checkWallet()) {
+                // Retry after 500ms (like main_v1.js)
+                setTimeout(() => {
+                    if (!userAddress) {
+                        checkWallet();
+                    }
+                }, 500);
             }
         };
 
