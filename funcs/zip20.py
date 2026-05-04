@@ -18,7 +18,7 @@ def token_create(info, args):
     assert type(decimal) is int
     assert decimal >= 0 and decimal <= 18
 
-    functions = ['token_transfer', 'token_mint_once', 'asset_update_ownership', 'asset_update_functions']
+    functions = ['token_transfer', 'token_mint_once', 'token_mint_free', 'asset_update_ownership', 'asset_update_functions']
     if len(args['a']) == 4:
         functions = args['a'][3]
         assert type(functions) is list

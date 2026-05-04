@@ -149,7 +149,7 @@ class DebugTransactionsHandler(DebugBaseHandler):
 class GetLatestStateAPIHandler(BaseHandler):
     def get(self):
         prefix = unquote(self.get_argument("prefix"))
-        print(space.states)
+        # print(space.states)
         if "-" not in prefix:
             self.finish({"result": None})
             return
@@ -405,86 +405,86 @@ class IndexerAPIHandler(BaseHandler):
 
         print("[IndexerAPIHandler] POST: " + str(data))
 
-        try:
-            info = data.get("info", {})
-            args = data.get("args", [])
-            sender = info.get("sender", "")
-            func.set_sender(sender)
-            func_name = info.get("name")
-            slot = info.get("slot") or 0
-            block_time = info.get("block_time")
-            tx_index = info.get("tx_index", 0)
-            txhash = info.get("txhash", "")
+        # try:
+        info = data.get("info", {})
+        args = data.get("args", [])
+        sender = info.get("sender", "")
+        func.set_sender(sender)
+        func_name = info.get("name")
+        slot = info.get("slot") or 0
+        block_time = info.get("block_time")
+        tx_index = info.get("tx_index", 0)
+        txhash = info.get("txhash", "")
 
-            block_number = space.nextblock(slot=slot if slot > 0 else None, timestamp=block_time)
+        block_number = space.nextblock(slot=slot if slot > 0 else None, timestamp=block_time)
 
-            # 把 block_number 和 tx_index 放入 info
-            info["block_number"] = block_number
-            info["tx_index"] = tx_index
+        # 把 block_number 和 tx_index 放入 info
+        info["block_number"] = block_number
+        info["tx_index"] = tx_index
 
-            if txhash:
-                if block_number not in space.blocks:
-                    space.blocks[block_number] = []
-                space.blocks[block_number].append((tx_index, txhash))
-                # 只存需要的字段，过滤掉 opcode
-                filtered_info = {
-                    "name": info.get("name"),
-                    "block_time": info.get("block_time"),
-                    "slot": info.get("slot"),
-                    "sender": info.get("sender"),
-                    "txhash": info.get("txhash"),
-                    "block_number": info.get("block_number"),
-                    "tx_index": info.get("tx_index"),
-                }
-                space.transactions[txhash] = {
-                    "info": filtered_info,
-                    "args": args
-                }
+        if txhash:
+            if block_number not in space.blocks:
+                space.blocks[block_number] = []
+            space.blocks[block_number].append((tx_index, txhash))
+            # 只存需要的字段，过滤掉 opcode
+            filtered_info = {
+                "name": info.get("name"),
+                "block_time": info.get("block_time"),
+                "slot": info.get("slot"),
+                "sender": info.get("sender"),
+                "txhash": info.get("txhash"),
+                "block_number": info.get("block_number"),
+                "tx_index": info.get("tx_index"),
+            }
+            space.transactions[txhash] = {
+                "info": filtered_info,
+                "args": args
+            }
 
-            if func_name and func_name in func.namespace:
-                call_args = {"p": "zen", "a": args, "f": func_name}
-                call_args["f"] = func_name
-                print("[IndexerAPIHandler] calling " + func_name + " with info=" + str(info) + ", args=" + str(call_args))
-                wrapped = func.namespace[func_name]
-                result = wrapped.f(info, call_args)
-                print("[IndexerAPIHandler] result: " + str(result))
+        if func_name and func_name in func.namespace:
+            call_args = {"p": "zen", "a": args, "f": func_name}
+            call_args["f"] = func_name
+            print("[IndexerAPIHandler] calling " + func_name + " with info=" + str(info) + ", args=" + str(call_args))
+            wrapped = func.namespace[func_name]
+            result = wrapped.f(info, call_args)
+            print("[IndexerAPIHandler] result: " + str(result))
 
-                # Broadcast new trade to WS clients BEFORE finish
-                if func_name in ["trade_limit_order", "trade_market_order"]:
-                    # Get the actual trade event from space.events
-                    block_number = info.get("block_number")
-                    if block_number and block_number in space.events:
-                        for evt in space.events[block_number]:
-                            if evt["event"] in ["TradeLimitTake", "TradeMarketTake"]:
-                                evt_args = evt["args"]
-                                if len(evt_args) >= 5:
-                                    pair = evt_args[0]
-                                    parts = pair.split("_")
-                                    if len(parts) == 2:
-                                        base, quote = parts
-                                        quote_decimal, _ = space.get(quote, 'decimal', 6)
-                                        base_decimal = 18  # BTC decimal
+            # Broadcast new trade to WS clients BEFORE finish
+            if func_name in ["trade_limit_order", "trade_market_order"]:
+                # Get the actual trade event from space.events
+                block_number = info.get("block_number")
+                if block_number and block_number in space.events:
+                    for evt in space.events[block_number]:
+                        if evt["event"] in ["TradeLimitTake", "TradeMarketTake"]:
+                            evt_args = evt["args"]
+                            if len(evt_args) >= 5:
+                                pair = evt_args[0]
+                                parts = pair.split("_")
+                                if len(parts) == 2:
+                                    base, quote = parts
+                                    quote_decimal, _ = space.get(quote, 'decimal', 6)
+                                    base_decimal = 18  # BTC decimal
 
-                                        trade_msg = {
-                                            "type": "trade",
-                                            "timestamp": info.get("block_time"),
-                                            "price": evt_args[4] / (10**quote_decimal),
-                                            "amount": evt_args[3] / (10**base_decimal),
-                                            "side": evt_args[1],
-                                            "pair": pair
-                                        }
-                                        broadcast(json.dumps(trade_msg))
-                                break
+                                    trade_msg = {
+                                        "type": "trade",
+                                        "timestamp": info.get("block_time"),
+                                        "price": evt_args[4] / (10**quote_decimal),
+                                        "amount": evt_args[3] / (10**base_decimal),
+                                        "side": evt_args[1],
+                                        "pair": pair
+                                    }
+                                    broadcast(json.dumps(trade_msg))
+                            break
 
-                self.finish({"result": result})
-            else:
-                self.set_status(400)
-                self.finish({"error": "Function " + str(func_name) + " not found"})
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            self.set_status(500)
-            self.finish({"error": str(e)})
+            self.finish({"result": result})
+            # else:
+            #     self.set_status(400)
+            #     self.finish({"error": "Function " + str(func_name) + " not found"})
+        # except Exception as e:
+        #     import traceback
+        #     traceback.print_exc()
+        #     self.set_status(500)
+        #     self.finish({"error": str(e)})
 
 
 class WSHandler(tornado.websocket.WebSocketHandler):

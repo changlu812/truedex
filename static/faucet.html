@@ -316,7 +316,7 @@
             connectButton.addEventListener('click', connectWallet);
             disconnectButton.addEventListener('click', disconnectWallet);
 
-            document.getElementById('faucetBTC').addEventListener('click', () => requestFaucet('BTC', 1000));
+            document.getElementById('faucetBTC').addEventListener('click', () => requestFaucet('BTC', 100));
             document.getElementById('faucetUSDC').addEventListener('click', () => requestFaucet('USDC', 10000));
 
             const checkWallet = () => {

@@ -11,21 +11,20 @@ from solana.rpc.commitment import Confirmed
 from solana.rpc import websocket_api as ws
 from solders.pubkey import Pubkey
 from solders.signature import Signature
-from setting import PROGRAM_ID, RPC_URL, WS_URL, USE_DEVNET, DEVNET_PROGRAM_ID, DEVNET_RPC_URL, DEVNET_WS_URL
+from setting import PROGRAM_ID, RPC_URL, WS_URL, USE_DEVNET, DEVNET_RPC_URL, DEVNET_WS_URL
 
 SERVER_URL = "http://127.0.0.1:3000"
 
 if USE_DEVNET:
     ACTIVE_RPC_URL = DEVNET_RPC_URL
     ACTIVE_WS_URL = DEVNET_WS_URL
-    ACTIVE_PROGRAM_ID = DEVNET_PROGRAM_ID
 else:
     ACTIVE_RPC_URL = RPC_URL
     ACTIVE_WS_URL = WS_URL
-    ACTIVE_PROGRAM_ID = PROGRAM_ID
+ACTIVE_PROGRAM_ID = PROGRAM_ID
 
 print(f"--- Indexer Active: Monitoring {ACTIVE_PROGRAM_ID} ---")
-print(f"--- Network: {'devnet' if USE_DEVNET else 'local test'} ---")
+print(f"--- Network: {'devnet' if USE_DEVNET else 'localhost'} ---")
 
 def parse_instruction(data: bytes, accounts: list) -> dict:
     if not data: return {"error": "no data"}
