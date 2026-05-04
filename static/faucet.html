@@ -138,35 +138,28 @@
 
         const getAllWallets = () => window.solana || window.backpack || null;
 
-        async function fetch_decimal(token) {
-            try {
-                const prefix = `base-${token}-decimal`;
-                const url = `${INDEXER_URL}/api/get_latest_state?prefix=${encodeURIComponent(prefix)}`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                return parseInt(data.result, 10) || 18;
-            } catch (e) {
-                console.error("Error fetching decimal:", e);
-                return token === 'USDC' ? 6 : 18;
-            }
-        }
+        const parseJsonWithBigInt = (data_json) => JSON.parse(
+            data_json,
+            (key, value, { source }) => (
+                Number.isInteger(value) && !Number.isSafeInteger(value) ? BigInt(source) : value
+            )
+        );
+
+        const TOKEN_DECIMALS = { BTC: 18, USDC: 6 };
 
         async function fetch_balance(token, address) {
             try {
-                const prefix = `base-${token}-balance:${address}`;
+                const prefix = `${token}-balance:${address}`;
                 const url = `${INDEXER_URL}/api/get_latest_state?prefix=${encodeURIComponent(prefix)}`;
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
-                const data = JSON.parse(await response.text(), (key, value, { source }) =>
-                    Number.isInteger(value) && !Number.isSafeInteger(value) ? BigInt(source) : value
-                );
+                const data_json = await response.text();
+                const data = parseJsonWithBigInt(data_json);
 
                 if (data.result) {
-                    const balance_big = BigInt(data.result);
-                    const decimal = await fetch_decimal(token);
-                    return (balance_big / BigInt(10 ** decimal)).toString();
+                    const formattedBalance = Number(data.result) / Math.pow(10, TOKEN_DECIMALS[token]);
+                    return formattedBalance.toString();
                 }
                 return '0';
             } catch (err) {
@@ -232,11 +225,17 @@
 
                 const serialized = JSON.stringify(calldata);
                 const data = new TextEncoder().encode(serialized);
+                // Add instruction identifier 3 for token_mint_free
+                const instructionData = new Uint8Array([3, ...data]);
 
                 const instruction = new TransactionInstruction({
-                    keys: [],
+                    keys: [{
+                        pubkey: new PublicKey(userAddress),
+                        isSigner: true,
+                        isWritable: true
+                    }],
                     programId: new PublicKey(SOLANA_PROGRAM),
-                    data: data,
+                    data: instructionData,
                 });
 
                 const transaction = new Transaction().add(instruction);
@@ -319,8 +318,21 @@
             document.getElementById('faucetUSDC').addEventListener('click', () => requestFaucet('USDC', 10000));
 
             wallet = getAllWallets();
-            if (wallet && wallet.connected) {
-                await connectWallet();
+            // Check if wallet is already connected
+            if (wallet && (wallet.isConnected === true || wallet.connected === true || wallet.publicKey)) {
+                userAddress = wallet.publicKey ? wallet.publicKey.toString() : null;
+                if (userAddress) {
+                    walletConnectDiv.style.display = 'none';
+                    walletInfoDiv.style.display = 'block';
+                    userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                    connection = new Connection(RPC_URL);
+                    await updateBalances();
+                    wallet.on('accountChanged', () => window.location.reload());
+                    wallet.on('disconnect', () => disconnectWallet());
+                } else {
+                    // Wallet found but not connected, try to connect
+                    await connectWallet();
+                }
             }
         };
 
