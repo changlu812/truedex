@@ -318,21 +318,33 @@
             document.getElementById('faucetUSDC').addEventListener('click', () => requestFaucet('USDC', 10000));
 
             wallet = getAllWallets();
-            // Check if wallet is already connected
-            if (wallet && (wallet.isConnected === true || wallet.connected === true || wallet.publicKey)) {
-                userAddress = wallet.publicKey ? wallet.publicKey.toString() : null;
-                if (userAddress) {
-                    walletConnectDiv.style.display = 'none';
-                    walletInfoDiv.style.display = 'block';
-                    userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
-                    connection = new Connection(RPC_URL);
-                    await updateBalances();
-                    wallet.on('accountChanged', () => window.location.reload());
-                    wallet.on('disconnect', () => disconnectWallet());
+            
+            if (wallet) {
+                // Check if wallet is already connected
+                if (wallet.isConnected === true || wallet.connected === true || wallet.publicKey) {
+                    userAddress = wallet.publicKey ? wallet.publicKey.toString() : null;
+                    if (userAddress) {
+                        // Already connected, show wallet info directly
+                        walletConnectDiv.style.display = 'none';
+                        walletInfoDiv.style.display = 'block';
+                        userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                        connection = new Connection(RPC_URL);
+                        await updateBalances();
+                        try {
+                            wallet.on('accountChanged', () => window.location.reload());
+                            wallet.on('disconnect', () => disconnectWallet());
+                        } catch (e) {}
+                    } else {
+                        // Wallet found but no publicKey, show connect button
+                        walletConnectDiv.style.display = 'flex';
+                    }
                 } else {
-                    // Wallet found but not connected, try to connect
-                    await connectWallet();
+                    // Wallet not connected, show connect button
+                    walletConnectDiv.style.display = 'flex';
                 }
+            } else {
+                // No wallet found, show connect button
+                walletConnectDiv.style.display = 'flex';
             }
         };
 
