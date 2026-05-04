@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrueDEX Faucet - Get Test Tokens</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="/static/css/main_v1.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <header class="bg-black bg-opacity-90 text-white p-4 shadow-lg">
+        <div class="flex justify-end items-center w-full px-4">
+            <nav class="flex space-x-4">
+                <a href="/static/main.html" class="block px-4 py-2 text-blue-400 hover:text-blue-300 transition">DEX</a>
+                <a href="/static/faucet.html" class="block px-4 py-2 text-green-400 hover:text-green-300 transition font-bold">BTC/USDC Faucet</a>
+                <a href="https://faucet.solana.com/" target="_blank" class="block px-4 py-2 text-yellow-400 hover:text-yellow-300 transition">SOL Faucet</a>
+                <a href="/debug/" class="block px-4 py-2 text-red-400 hover:text-red-300 transition">Debug</a>
+            </nav>
+        </div>
+    </header>
+
+    <div id="walletConnect" class="relative min-h-[calc(100vh-80px)] flex items-center justify-center">
+        <div class="bg-gray-800 p-10 rounded-2xl shadow-2xl max-w-2xl w-full text-center border border-gray-700">
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-white mb-4">🚰 TrueDEX Faucet</h1>
+                <p class="text-gray-300 text-lg">Get free test tokens for Solana development</p>
+            </div>
+            <div class="mb-6">
+                <button class="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold py-4 px-8 rounded-xl text-xl shadow-lg transform hover:scale-105 transition" id="connectButton">
+                    Connect Solana Wallet
+                </button>
+            </div>
+            <p class="text-sm text-gray-400">Supports Phantom, Backpack, and other Solana wallets</p>
+        </div>
+    </div>
+
+    <div id="walletInfo" style="display: none;" class="container mx-auto px-4 py-12">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 border border-gray-700">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white mb-2">Wallet Connected</h2>
+                        <p class="text-gray-300"><strong>Address:</strong> <span id="userAddress" class="font-mono text-sm text-green-400"></span></p>
+                    </div>
+                    <button id="disconnectButton" class="mt-4 md:mt-0 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition">
+                        Disconnect
+                    </button>
+                </div>
+                <div id="balance-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"></div>
+            </div>
+
+            <div class="bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-700">
+                <h2 class="text-3xl font-bold text-center mb-8 text-white">🚰 Request Test Tokens</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gradient-to-br from-orange-900 to-yellow-900 rounded-xl p-6 border border-orange-700 shadow-md">
+                        <div class="flex items-center mb-4">
+                            <span class="text-3xl mr-3">₿</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">BTC</h3>
+                                <p class="text-sm text-gray-300">Bitcoin (Test)</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Get 100 test BTC tokens</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-gray-400">Balance:</span>
+                            <span id="btc-balance" class="font-mono font-bold text-orange-400">0</span>
+                        </div>
+                        <button id="faucetBTC" class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-4 rounded-lg shadow transition">
+                            Get BTC
+                        </button>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-900 to-cyan-900 rounded-xl p-6 border border-blue-700 shadow-md">
+                        <div class="flex items-center mb-4">
+                            <span class="text-3xl mr-3">💵</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">USDC</h3>
+                                <p class="text-sm text-gray-300">USD Coin (Test)</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">Get 10,000 test USDC tokens</p>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-gray-400">Balance:</span>
+                            <span id="usdc-balance" class="font-mono font-bold text-blue-400">0</span>
+                        </div>
+                        <button id="faucetUSDC" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow transition">
+                            Get USDC
+                        </button>
+                    </div>
+                </div>
+
+                <div id="faucetResult" class="mt-6 text-center"></div>
+
+                <div class="mt-8 p-4 bg-gray-900 rounded-lg border border-gray-700">
+                    <h4 class="font-bold text-yellow-400 mb-2">ℹ️ About TrueDEX Test Tokens</h4>
+                    <ul class="text-sm text-gray-300 space-y-1">
+                        <li>• These tokens have no real value and are for testing only</li>
+                        <li>• Powered by Zentra protocol on Solana</li>
+                        <li>• Use them in the <a href="/static/main.html" class="text-blue-400 hover:underline">TrueDEX DEX</a> to test trading</li>
+                        <li>• Tokens follow the ZIP-20 standard</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script type="module">
+        import { Connection, PublicKey, Transaction, TransactionInstruction } from 'https://esm.sh/@solana/web3.js@1.95.0';
+
+        const RPC_URL = 'http://127.0.0.1:8899';
+        const INDEXER_URL = 'http://127.0.0.1:3000';
+        const SOLANA_PROGRAM = '9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd';
+
+        const connectButton = document.getElementById('connectButton');
+        const walletConnectDiv = document.getElementById('walletConnect');
+        const walletInfoDiv = document.getElementById('walletInfo');
+        const userAddressSpan = document.getElementById('userAddress');
+        const disconnectButton = document.getElementById('disconnectButton');
+        const faucetResult = document.getElementById('faucetResult');
+
+        let wallet = null;
+        let userAddress = null;
+        let connection = null;
+
+        const showMessage = (message, type) => {
+            console.log(`[${type}] ${message}`);
+            if (faucetResult) {
+                const color = type === 'error' ? 'text-red-400' : 'text-green-400';
+                const bgColor = type === 'error' ? 'bg-red-900 border-red-700' : 'bg-green-900 border-green-700';
+                faucetResult.innerHTML = `<div class="${bgColor} border rounded-lg p-4"><span class="${color} font-bold">${message}</span></div>`;
+            }
+        };
+
+        const getAllWallets = () => window.solana || window.backpack || null;
+
+        async function fetch_decimal(token) {
+            try {
+                const prefix = `base-${token}-decimal`;
+                const url = `${INDEXER_URL}/api/get_latest_state?prefix=${encodeURIComponent(prefix)}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                return parseInt(data.result, 10) || 18;
+            } catch (e) {
+                console.error("Error fetching decimal:", e);
+                return token === 'USDC' ? 6 : 18;
+            }
+        }
+
+        async function fetch_balance(token, address) {
+            try {
+                const prefix = `base-${token}-balance:${address}`;
+                const url = `${INDEXER_URL}/api/get_latest_state?prefix=${encodeURIComponent(prefix)}`;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = JSON.parse(await response.text(), (key, value, { source }) =>
+                    Number.isInteger(value) && !Number.isSafeInteger(value) ? BigInt(source) : value
+                );
+
+                if (data.result) {
+                    const balance_big = BigInt(data.result);
+                    const decimal = await fetch_decimal(token);
+                    return (balance_big / BigInt(10 ** decimal)).toString();
+                }
+                return '0';
+            } catch (err) {
+                console.error(`Fetch error for ${token}:`, err);
+                return '0';
+            }
+        }
+
+        async function updateBalances() {
+            if (!userAddress) return;
+
+            const btcBalance = await fetch_balance('BTC', userAddress);
+            const usdcBalance = await fetch_balance('USDC', userAddress);
+
+            document.getElementById('btc-balance').textContent = parseFloat(btcBalance).toFixed(4);
+            document.getElementById('usdc-balance').textContent = parseFloat(usdcBalance).toFixed(4);
+
+            const balanceList = document.getElementById('balance-list');
+            balanceList.innerHTML = `
+                <div class="flex justify-between items-center p-4 bg-gray-900 rounded-lg border border-gray-700">
+                    <span class="font-semibold text-white">₿ BTC</span>
+                    <span class="font-mono font-bold text-orange-400">${parseFloat(btcBalance).toFixed(4)}</span>
+                </div>
+                <div class="flex justify-between items-center p-4 bg-gray-900 rounded-lg border border-gray-700">
+                    <span class="font-semibold text-white">💵 USDC</span>
+                    <span class="font-mono font-bold text-blue-400">${parseFloat(usdcBalance).toFixed(4)}</span>
+                </div>
+            `;
+        }
+
+        async function requestFaucet(token, amount) {
+            if (!wallet || !userAddress) {
+                showMessage('Please connect your wallet first', 'error');
+                return;
+            }
+
+            const button = document.getElementById(`faucet${token}`);
+            button.disabled = true;
+            button.textContent = 'Processing...';
+
+            try {
+                const decimal = await fetch_decimal(token);
+                const amountBig = BigInt(amount) * BigInt(10 ** decimal);
+
+                const calldata = {
+                    "p": "zen",
+                    "f": "token_mint_free",
+                    "a": [token, amountBig.toString()]
+                };
+
+                const serialized = JSON.stringify(calldata);
+                const data = new TextEncoder().encode(serialized);
+
+                const instruction = new TransactionInstruction({
+                    keys: [],
+                    programId: new PublicKey(SOLANA_PROGRAM),
+                    data: data,
+                });
+
+                const transaction = new Transaction().add(instruction);
+                transaction.feePayer = new PublicKey(userAddress);
+
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+
+                const signedTransaction = await wallet.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+
+                showMessage(`Transaction sent: ${signature.slice(0, 10)}...${signature.slice(-8)}`, 'success');
+
+                await connection.confirmTransaction(signature);
+                showMessage(`Successfully received ${amount} ${token}!`, 'success');
+
+                setTimeout(updateBalances, 2000);
+
+            } catch (error) {
+                console.error(error);
+                showMessage(`Failed: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+                button.textContent = `Get ${token}`;
+            }
+        }
+
+        const connectWallet = async () => {
+            try {
+                wallet = getAllWallets();
+                if (!wallet) {
+                    return showMessage('No Solana wallet found! Please install Phantom or Backpack.', 'error');
+                }
+
+                connection = new Connection(RPC_URL);
+
+                await wallet.connect();
+                userAddress = wallet.publicKey.toString();
+
+                walletConnectDiv.style.display = 'none';
+                walletInfoDiv.style.display = 'block';
+                userAddressSpan.textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+
+                await updateBalances();
+
+                wallet.on('accountChanged', () => window.location.reload());
+                wallet.on('disconnect', () => disconnectWallet());
+
+            } catch (error) {
+                console.error(error);
+                showMessage(`Error connecting wallet: ${error.message}`, 'error');
+            }
+        };
+
+        const disconnectWallet = () => {
+            if (wallet) {
+                wallet.disconnect();
+            }
+            walletInfoDiv.style.display = 'none';
+            walletConnectDiv.style.display = 'flex';
+            userAddressSpan.textContent = '';
+            wallet = null;
+            userAddress = null;
+            connection = null;
+        };
+
+        const init = async () => {
+            connectButton.addEventListener('click', connectWallet);
+            disconnectButton.addEventListener('click', disconnectWallet);
+
+            document.getElementById('faucetBTC').addEventListener('click', () => requestFaucet('BTC', 1000));
+            document.getElementById('faucetUSDC').addEventListener('click', () => requestFaucet('USDC', 10000));
+
+            wallet = getAllWallets();
+            if (wallet && wallet.connected) {
+                await connectWallet();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

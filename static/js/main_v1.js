@@ -66,24 +66,13 @@ class Header extends React.Component {
 
   render() {
     const { solAddress, walletLoading } = this.props.walletState;
-    return rc('header', { className: 'header p-4 flex justify-between items-center bg-gray-800 text-white' },
-      rc('div', { className: 'logo flex items-center' },
-        rc('img', { src: 'logo.svg', alt: 'Logo', className: 'h-8 w-8 mr-2' }),
-        rc('span', { className: 'text-xl font-bold' }, 'TrueDEX')
-      ),
-      rc('nav', { className: 'menu' },
-        rc('ul', { className: 'flex space-x-4' },
-          rc('li', null, rc('a', { href: '#', className: 'hover:text-gray-400' }, 'Home')),
-          rc('li', null, rc('a', { href: '#', className: 'hover:text-gray-400' }, 'About')),
-          rc('li', null, rc('a', { href: '#', className: 'hover:text-gray-400' }, 'Contact'))
-        )
-      ),
-      rc('div', { className: 'login' },
+    return rc('header', { className: 'header p-4 flex items-center bg-gray-800 text-white' },
+      rc('div', { className: 'login ml-auto flex items-center gap-2' },
         walletLoading ?
           null :
           (solAddress ?
             rc('div', { className: 'flex items-center gap-2' },
-              rc('span', { className: 'font-mono text-sm' }, `${solAddress.substring(0, 6)}...${solAddress.substring(solAddress.length - 4)}`),
+              rc('span', { className: 'font-mono text-sm text-right' }, `${solAddress.substring(0, 6)}...${solAddress.substring(solAddress.length - 4)}`),
               rc('button', { onClick: this.props.handleWalletLogout, className: 'bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm' }, 'Logout')
             ) :
             rc('button', { onClick: this.props.handleWalletLogin, className: 'bg-gray-200 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded' }, 'Connect Wallet'))

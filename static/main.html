@@ -1,13 +1,30 @@
 <html>
-<head></head>
-<body>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-900">
+    <header class="bg-black bg-opacity-90 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="/static/logo.svg" alt="TrueDEX" class="h-8 w-8">
+                <span class="text-orange-500 font-bold text-xl">TrueDEX</span>
+            </div>
+
+            <nav class="hidden md:flex space-x-4">
+                <a href="/static/main.html" class="block px-4 py-2 text-blue-400 hover:text-blue-300 transition font-bold">DEX</a>
+                <a href="/static/faucet.html" class="block px-4 py-2 text-green-400 hover:text-green-300 transition">BTC/USDC Faucet</a>
+                <a href="/static/sol_faucet.html" class="block px-4 py-2 text-yellow-400 hover:text-yellow-300 transition">SOL Faucet</a>
+                <a href="/debug/" class="block px-4 py-2 text-red-400 hover:text-red-300 transition">Debug</a>
+            </nav>
+        </div>
+    </header>
+
 <canvas id="starry-sky"></canvas>
 <div id="root"></div>
-</body>
-<!-- <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script> -->
-<!-- <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script> -->
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" integrity="sha512-8Q6Y9XnTbOE+JNvjBQwJ2H8S+UV4uA6hiRykhdtIyDYZ2TprdNmWOUaKdGzOhyr4dCyk287OejbPvwl7lrfqrQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" integrity="sha512-MOCpqoRoisCTwJ8vQQiciZv0qcpROCidek3GTFS6KTk2+y7munJIlKCVkFCYY+p3ErYFXCjmFjnfTTRSC1OHWQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js" integrity="sha512-m7nhpWHotpucPI37I4lPovL28Bm2BhAMV8poF3F8Z9oOEZ3jlxGzkgvG0EMt1mVL1xydr1erlBbmN90js/ssUw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js" integrity="sha512-I5GJQRKGdj2miDs8ComgARfiAQiZJo/43YasH22qtweoG+YRXLTDYegxC/vPgw/ERxRzww/F4l4+8UiMmI20sw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://unpkg.com/lightweight-charts@4.1.7/dist/lightweight-charts.standalone.production.js"></script>
@@ -16,4 +33,5 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.16/tailwind.min.css" rel="stylesheet">
 <link href="/static/css/main_v1.css" rel="stylesheet">
 <!-- <script src="/static/js/starry_sky.js" defer></script> -->
+</body>
 </html>
