@@ -112,9 +112,9 @@
     <script type="module">
         import { Connection, PublicKey, Transaction, TransactionInstruction } from 'https://esm.sh/@solana/web3.js@1.95.0';
 
-        const RPC_URL = 'http://127.0.0.1:8899';
-        const INDEXER_URL = 'http://127.0.0.1:3000';
-        const SOLANA_PROGRAM = '9Edb9LhgFoMqVEVnuC8bN8GCxsKi9xHrorkJz22S8KTd';
+        const RPC_URL = 'https://api.devnet.solana.com';
+        const INDEXER_URL = 'https://truedex-testnet.zentra.dev';
+        const SOLANA_PROGRAM = '2AxT8e7Jq2vgoPNo8uT1Go3Huifdx5XWm4CntKz4aiih';
 
         const connectButton = document.getElementById('connectButton');
         const walletConnectDiv = document.getElementById('walletConnect');
@@ -203,6 +203,19 @@
                 return;
             }
 
+            if (!connection) {
+                showMessage('Solana connection not initialized', 'error');
+                return;
+            }
+
+            // Test connection before proceeding
+            try {
+                await connection.getSlot();
+            } catch (connError) {
+                showMessage('Cannot connect to Solana node. Please start local validator at ' + RPC_URL, 'error');
+                return;
+            }
+
             const button = document.getElementById(`faucet${token}`);
             button.disabled = true;
             button.textContent = 'Processing...';
@@ -259,6 +272,14 @@
                 }
 
                 connection = new Connection(RPC_URL);
+
+                // Test connection
+                try {
+                    await connection.getSlot();
+                } catch (connError) {
+                    showMessage('Cannot connect to Solana node at ' + RPC_URL + '. Please start local validator.', 'error');
+                    return;
+                }
 
                 await wallet.connect();
                 userAddress = wallet.publicKey.toString();

@@ -1,6 +1,6 @@
 import sys
 import time
-from setting import accounts, RPC_URL
+from setting import accounts, RPC_URL, USE_DEVNET
 from solders.keypair import Keypair
 from solders.pubkey import Pubkey
 from solana.rpc.api import Client
@@ -52,28 +52,33 @@ if __name__ == '__main__':
     funder = Keypair.from_json(open(DEFAULT_KEYPAIR_PATH).read())
     print(f"资金来源: {funder.pubkey()}")
     
-    # 检查并给每个测试账户转 SOL（gas）
-    print("\n=== 给测试账户转 SOL (gas) ===")
-    for i, kp in enumerate(accounts):
-        pubkey = kp.pubkey()
-        
-        # 检查余额
-        balance = client.get_balance(pubkey).value
-        balance_sol = balance / 10**9
-        print(f"账户{i} ({pubkey}) 余额: {balance_sol:.4f} SOL")
-        
-        if balance_sol < 0.1:  # 少于0.1 SOL就转
-            print(f"  转账 1.0 SOL 作为 gas...")
-            try:
-                tx_hash = transfer_sol(client, funder, pubkey, 1.0)
-                print(f"  交易: {tx_hash}")
-                time.sleep(2)
-            except Exception as e:
-                print(f"  转账失败: {e}")
+    # 检查并给每个测试账户转 SOL（gas
+    if not USE_DEVNET:
+        print("\n=== 给测试账户转 SOL (gas) ===")
+        for i, kp in enumerate(accounts):
+            pubkey = kp.pubkey()
+            
+            # 检查余额
+            balance = client.get_balance(pubkey).value
+            balance_sol = balance / 10**9
+            print(f"账户{i} ({pubkey}) 余额: {balance_sol:.4f} SOL")
+            
+            if balance_sol < 0.1:  # 少于0.1 SOL就转
+                print(f"  转账 1.0 SOL 作为 gas...")
+                try:
+                    tx_hash = transfer_sol(client, funder, pubkey, 1.0)
+                    print(f"  交易: {tx_hash}")
+                    time.sleep(2)
+                except Exception as e:
+                    print(f"  转账失败: {e}")
     
     # 给测试账户转 USDC 和 BTC
     print("\n=== 转账代币 ===")
-    for i, kp in enumerate(accounts[1:], 1):  # 跳过account0（默认是资金来源）
+    if USE_DEVNET:
+        test_accounts = accounts[0:2]
+    else:
+        test_accounts = accounts
+    for i, kp in enumerate(test_accounts, 1):  # 跳过account0（默认是资金来源）
         pubkey = str(kp.pubkey())
         
         # 转 USDC
@@ -99,8 +104,10 @@ if __name__ == '__main__':
         time.sleep(1)
 
     to = 'im3ZVx56GK7JQxi3UVBC3N2bQF3QDcAwfrvcvREZrgm'
-    pubkey = Pubkey.from_string(to)
-    tx_hash = transfer_sol(client, funder, pubkey, 1.0)
+    if not USE_DEVNET:
+        pubkey = Pubkey.from_string(to)
+        tx_hash = transfer_sol(client, funder, pubkey, 1.0)
+        print(tx_hash)
 
     call = '{"p": "zen", "f": "token_transfer", "a": ["USDC", "%s", 15000000000000]}' % to
     print(call)
