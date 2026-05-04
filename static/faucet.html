@@ -23,7 +23,7 @@
         </div>
     </header>
 
-    <div id="walletConnect" class="relative min-h-[calc(100vh-80px)] flex items-center justify-center">
+    <div id="walletConnect" style="display: none;" class="relative min-h-[calc(100vh-80px)] flex items-center justify-center">
         <div class="bg-gray-800 p-10 rounded-2xl shadow-2xl max-w-2xl w-full text-center border border-gray-700">
             <div class="mb-8">
                 <h1 class="text-4xl font-bold text-white mb-4">🚰 TrueDEX Faucet</h1>
@@ -214,7 +214,7 @@
             button.textContent = 'Processing...';
 
             try {
-                const decimal = await fetch_decimal(token);
+                const decimal = TOKEN_DECIMALS[token] || 18;
                 const amountBig = BigInt(amount) * BigInt(10 ** decimal);
 
                 const calldata = {
