@@ -715,35 +715,20 @@ class OrderPanel extends React.Component {
           quote_amount = null;
         } else {
           // 买 BTC，Size 是 USDC 数量
-          quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
+          quote_amount = BigInt(-Math.floor(parseFloat(size) * 1e6)).toString();
           base_amount = null;
         }
       } else {
         // Sell
         if (sizeUnit === for_token) {
           // 卖 BTC，Size 是 BTC 数量
-          base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
+          base_amount = BigInt(-Math.floor(parseFloat(size) * 1e18)).toString();
           quote_amount = null;
         } else {
           // 卖 BTC，Size 是想要获得的 USDC 数量
           quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
           base_amount = null;
         }
-      }
-      if (tradeType === 'Buy') {
-        if (sizeUnit === 'BTC') {
-          // 买 BTC，Size 是 BTC 数量
-          base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
-          quote_amount = null;
-        } else {
-          // 买 BTC，Size 是 USDC 数量
-          quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
-          base_amount = null;
-        }
-      } else {
-        // Sell，Size 是 BTC 数量
-        base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
-        quote_amount = null;
       }
 
       const calldata = JSON.stringify({
