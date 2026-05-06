@@ -36,9 +36,15 @@ if __name__ == '__main__':
         sys.exit(1)
 
     account_num = int(sys.argv[1])
-    if account_num >= len(accounts):
-        print(f"错误: 账户 {account_num} 不存在 (共 {len(accounts)} 个账户)")
-        sys.exit(1)
+    if account_num == -1:
+        kp = None
+        pubkey = None
+    else:
+        if account_num >= len(accounts):
+            print(f"错误: 账户 {account_num} 不存在 (共 {len(accounts)} 个账户)")
+            sys.exit(1)
+        kp = accounts[account_num]
+        pubkey = str(kp.pubkey())
 
     base_amount = int(float(sys.argv[2]) * 10**18)
     # quote_amount 可能是 null 或数字
@@ -47,15 +53,15 @@ if __name__ == '__main__':
     else:
         quote_amount = int(float(sys.argv[3]) * 10**6)
 
-    kp = accounts[account_num]
-    pubkey = str(kp.pubkey())
-
     # 查询交易前余额
-    print(f"\n=== 交易前余额 (账户{account_num}) ===")
-    btc_before = get_balance(pubkey, "BTC")
-    usdc_before = get_balance(pubkey, "USDC")
-    print(f"BTC: {btc_before:.6f}")
-    print(f"USDC: {usdc_before:.6f}")
+    if pubkey:
+        print(f"\n=== 交易前余额 (账户{account_num}) ===")
+        btc_before = get_balance(pubkey, "BTC")
+        usdc_before = get_balance(pubkey, "USDC")
+        print(f"BTC: {btc_before:.6f}")
+        print(f"USDC: {usdc_before:.6f}")
+    else:
+        btc_before = usdc_before = 0.0
 
     # 构造交易
     call = {
@@ -75,8 +81,9 @@ if __name__ == '__main__':
     time.sleep(3)
 
     # 查询交易后余额
-    print(f"\n=== 交易后余额 ===")
-    btc_after = get_balance(pubkey, "BTC")
-    usdc_after = get_balance(pubkey, "USDC")
-    print(f"BTC: {btc_after:.6f} (变化: {btc_after - btc_before:+.6f})")
-    print(f"USDC: {usdc_after:.6f} (变化: {usdc_after - usdc_before:+.6f})")
+    if pubkey:
+        print(f"\n=== 交易后余额 ===")
+        btc_after = get_balance(pubkey, "BTC")
+        usdc_after = get_balance(pubkey, "USDC")
+        print(f"BTC: {btc_after:.6f} (变化: {btc_after - btc_before:+.6f})")
+        print(f"USDC: {usdc_after:.6f} (变化: {usdc_after - usdc_before:+.6f})")

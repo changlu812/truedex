@@ -566,19 +566,40 @@ class OrderPanel extends React.Component {
 
   handleRangeChange = (e) => {
     const percentage = e.target.value;
-    const { tradeType, balance, price, sizeUnit } = this.state;
+    const { tradeType, balance, price, sizeUnit, activeTab } = this.state;
     const for_token = 'BTC';
     let newSize = '';
 
-    if (tradeType === 'Buy') {
-      const budget = balance.USDC * (percentage / 100);
-      if (price > 0) {
-        newSize = sizeUnit === for_token ? (budget / price).toFixed(6) : budget.toFixed(2);
+    if (activeTab === 'Market') {
+      if (tradeType === 'Buy') {
+        if (sizeUnit === for_token) {
+          // Size 是 BTC 数量
+          newSize = (balance.USDC / (price || 1) * (percentage / 100)).toFixed(6);
+        } else {
+          // Size 是 USDC 数量
+          newSize = (balance.USDC * (percentage / 100)).toFixed(2);
+        }
+      } else {
+        // Sell
+        if (sizeUnit === for_token) {
+          // Size 是 BTC 数量
+          newSize = (balance[for_token] * (percentage / 100)).toFixed(6);
+        } else {
+          // Size 是想要获得的 USDC 数量
+          newSize = (balance[for_token] * (price || 1) * (percentage / 100)).toFixed(2);
+        }
       }
     } else {
-      const amount = balance[for_token] * (percentage / 100);
-      if (price > 0) {
-        newSize = sizeUnit === for_token ? amount.toFixed(6) : (amount * price).toFixed(2);
+      if (tradeType === 'Buy') {
+        const budget = balance.USDC * (percentage / 100);
+        if (price > 0) {
+          newSize = sizeUnit === for_token ? (budget / price).toFixed(6) : budget.toFixed(2);
+        }
+      } else {
+        const amount = balance[for_token] * (percentage / 100);
+        if (price > 0) {
+          newSize = sizeUnit === for_token ? amount.toFixed(6) : (amount * price).toFixed(2);
+        }
       }
     }
 
@@ -688,9 +709,39 @@ class OrderPanel extends React.Component {
         return;
       }
       if (tradeType === 'Buy') {
-        quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
-        base_amount = null;
+        if (sizeUnit === for_token) {
+          // 买 BTC，Size 是 BTC 数量
+          base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
+          quote_amount = null;
+        } else {
+          // 买 BTC，Size 是 USDC 数量
+          quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
+          base_amount = null;
+        }
       } else {
+        // Sell
+        if (sizeUnit === for_token) {
+          // 卖 BTC，Size 是 BTC 数量
+          base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
+          quote_amount = null;
+        } else {
+          // 卖 BTC，Size 是想要获得的 USDC 数量
+          quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
+          base_amount = null;
+        }
+      }
+      if (tradeType === 'Buy') {
+        if (sizeUnit === 'BTC') {
+          // 买 BTC，Size 是 BTC 数量
+          base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
+          quote_amount = null;
+        } else {
+          // 买 BTC，Size 是 USDC 数量
+          quote_amount = BigInt(Math.floor(parseFloat(size) * 1e6)).toString();
+          base_amount = null;
+        }
+      } else {
+        // Sell，Size 是 BTC 数量
         base_amount = BigInt(Math.floor(parseFloat(size) * 1e18)).toString();
         quote_amount = null;
       }
@@ -741,11 +792,20 @@ class OrderPanel extends React.Component {
     const tradeTypeClass = this.state.tradeType === 'Buy' ? 'bg-green-500 hover:bg-green-700' : 'bg-red-500 hover:bg-red-700';
     const balanceToShow = this.state.tradeType === 'Buy' ? `${this.state.balance.USDC.toFixed(2)} USDC` : `${(this.state.balance.BTC || 0).toFixed(4)} BTC`;
     let total = 0;
-    if (this.state.price > 0 && this.state.size > 0) {
-      if (this.state.sizeUnit === 'BTC') {
-        total = this.state.price * this.state.size;
+    if (this.state.activeTab === 'Limit') {
+      if (this.state.price > 0 && this.state.size > 0) {
+        if (this.state.sizeUnit === 'BTC') {
+          total = this.state.price * this.state.size;
+        } else {
+          total = parseFloat(this.state.size);
+        }
+      }
+    } else {
+      // Market order
+      if (this.state.tradeType === 'Buy') {
+        total = parseFloat(this.state.size) || 0;
       } else {
-        total = parseFloat(this.state.size);
+        total = parseFloat(this.state.size) || 0;
       }
     }
 
@@ -765,8 +825,11 @@ class OrderPanel extends React.Component {
         ),
         this.state.activeTab === 'Market' && rc('div', { className: 'market-tab space-y-4' },
           rc('div', null,
-            rc('label', { className: 'block text-sm text-gray-400' }, 'Size'),
-            rc('input', { type: 'text', name: 'size', value: this.state.size, onChange: this.handleInputChange, placeholder: 'Enter size', className: 'w-full p-2 bg-gray-800 border border-gray-700 rounded' })
+            rc('div', { className: 'flex justify-between items-center' },
+              rc('label', { className: 'block text-sm text-gray-400' }, 'Size'),
+              rc('button', { onClick: this.handleSizeUnitChange, className: 'text-sm text-blue-400 hover:text-blue-300' }, `in ${this.state.sizeUnit}`)
+            ),
+            rc('input', { type: 'text', name: 'size', value: this.state.size, onChange: this.handleInputChange, placeholder: `Enter size in ${this.state.sizeUnit}`, className: 'w-full p-2 bg-gray-800 border border-gray-700 rounded' })
           )
         ),
         this.state.activeTab === 'Limit' && rc('div', { className: 'limit-tab space-y-4' },
@@ -795,9 +858,10 @@ class OrderPanel extends React.Component {
               rc('span', null, '100%')
             )
           ),
-          rc('div', { className: 'flex justify-between text-sm' }),
-          rc('span', { className: 'text-gray-400' }, 'Total:'),
-          rc('span', { className: 'font-mono' }, `${total.toFixed(2)} USDC`)
+          rc('div', { className: 'flex justify-between text-sm' },
+            rc('span', { className: 'text-gray-400' }, 'Total:'),
+            rc('span', { className: 'font-mono' }, `${total.toFixed(2)} USDC`)
+          )
         ),
         rc('button', { className: `w-full mt-4 py-2 rounded text-white font-bold ${tradeTypeClass}`, onClick: this.placeOrder }, `Place ${this.state.tradeType} Order`)
       )

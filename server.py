@@ -390,9 +390,7 @@ class EventsAPIHandler(BaseHandler):
 
 class IndexerAPIHandler(BaseHandler):
     def get(self):
-        txhash = self.get_argument("txhash")
-        print("[IndexerAPIHandler] GET txhash=" + txhash)
-        self.finish({"result": []})
+        self.redirect('/static/main.html')
 
     def post(self):
         import tornado.escape
