@@ -426,17 +426,17 @@ class MarketPanel extends React.Component {
       rc('div', { className: 'asks' },
         asks.slice(0, 10).reverse().map((ask, index) =>
           rc('div', { key: index, className: 'flex justify-between p-1 text-red-500' },
-            rc('span', null, Number(ask.price) / 1e6),
-            rc('span', null, String(Number(ask.base) / 1e18).substring(0, 8)),
+            rc('span', null, (Number(ask.price) / 1e6).toFixed(2)),
+            rc('span', null, (Math.abs(Number(ask.base)) / 1e18).toFixed(6)),
           )
         )
       ),
-      rc('div', { className: 'current-price p-2 text-lg font-bold text-center' }, bids.length > 0 ? (Number(bids[0].price) / 1e6).toString() : (asks.length > 0 ? (Number(asks[0].price) / 1e6).toString() : '-')),
+      rc('div', { className: 'current-price p-2 text-lg font-bold text-center' }, bids.length > 0 ? (Number(bids[0].price) / 1e6).toFixed(2) : (asks.length > 0 ? (Number(asks[0].price) / 1e6).toFixed(2) : '-')),
       rc('div', { className: 'bids' },
         bids.slice(0, 10).map((bid, index) =>
           rc('div', { key: index, className: 'flex justify-between p-1 text-green-500' },
-            rc('span', null, Number(bid.price) / 1e6),
-            rc('span', null, String(Number(bid.base) / 1e18).substring(0, 8)),
+            rc('span', null, (Number(bid.price) / 1e6).toFixed(2)),
+            rc('span', null, (Math.abs(Number(bid.base)) / 1e18).toFixed(6)),
           )
         )
       )
@@ -445,7 +445,7 @@ class MarketPanel extends React.Component {
 
   renderTrades() {
     const { trades } = this.props;
-    if (!trades || trades.length === 0) {
+    if (!Array.isArray(trades) || trades.length === 0) {
       return rc('div', { className: 'trades text-white text-center p-4' }, 'No recent trades.');
     }
 
@@ -456,13 +456,16 @@ class MarketPanel extends React.Component {
         rc('span', { className: 'w-1/3 text-right' }, 'Size (BTC)'),
       ),
       rc('div', { className: 'trade-list' },
-        trades.map((trade, index) =>
-          rc('div', { key: index, className: `flex justify-between p-1 ${trade.side === 'buy' ? 'text-green-500' : 'text-red-500'}` },
-            rc('span', { className: 'w-1/3 font-mono' }, new Date(trade.timestamp * 1000).toLocaleTimeString()),
-            rc('span', { className: 'w-1/3 text-right font-mono' }, trade.price.toFixed(2)),
-            rc('span', { className: 'w-1/3 text-right font-mono' }, trade.base_amount.toFixed(6)),
-          )
-        )
+        trades.map((trade, index) => {
+          const price = Number(trade.price) || 0;
+          const amount = Number(trade.amount || trade.base_amount) || 0;
+          const timeStr = trade.timestamp ? new Date(trade.timestamp * 1000).toLocaleTimeString() : '-';
+          return rc('div', { key: index, className: `flex justify-between p-1 ${trade.side === 'buy' ? 'text-green-500' : 'text-red-500'}` },
+            rc('span', { className: 'w-1/3 font-mono' }, timeStr),
+            rc('span', { className: 'w-1/3 text-right font-mono' }, price > 0 ? price.toFixed(2) : '-'),
+            rc('span', { className: 'w-1/3 text-right font-mono' }, amount > 0 ? amount.toFixed(6) : '-'),
+          );
+        })
       )
     );
   }
