@@ -516,7 +516,7 @@ def broadcast(message):
 def start_server():
     app = tornado.web.Application([
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": "static/"}),
-        (r"/debug/", DebugOverviewHandler),
+        (r"/debug", DebugOverviewHandler),
         (r"/debug/blocks", DebugBlocksHandler),
         (r"/debug/block/(\d+)", DebugBlockHandler),
         (r"/debug/events", DebugEventsHandler),

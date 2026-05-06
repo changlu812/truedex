@@ -7,13 +7,13 @@ from solders.message import Message
 from solders.transaction import Transaction
 from solders.instruction import Instruction, AccountMeta as AM
 
-from setting import PROGRAM_ID, USE_DEVNET, DEVNET_RPC_URL
+from setting import PROGRAM_ID, USE_DEVNET, DEVNET_RPC_URL, RPC_URL
 
 def transaction(call, keypair=None):
     if USE_DEVNET:
         client = Client(DEVNET_RPC_URL)
     else:
-        client = Client("http://localhost:8899")
+        client = Client(RPC_URL)
     
     # 支持传入 Keypair 对象或路径
     if isinstance(keypair, Keypair):
